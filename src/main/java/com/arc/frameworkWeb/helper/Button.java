@@ -70,7 +70,7 @@ public class Button extends CommonHelper {
 //            }
             afterPerformingAction();
         } else {
-            page.locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().click();
         }
     }
     /**
@@ -99,7 +99,7 @@ public class Button extends CommonHelper {
 //            }
             afterPerformingAction();
         } else {
-            page.locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().click();
         }
     }
     /**
@@ -116,8 +116,8 @@ public class Button extends CommonHelper {
             getElement(locator).click();
             afterPerformingAction();
         } else {
-            page.locator(getLocator("" + locator)).first().click();
-            page.locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().click();
         }
     }
     /**
@@ -134,8 +134,8 @@ public class Button extends CommonHelper {
             locator.click();
             afterPerformingAction();
         } else {
-            page.locator(getLocator("" + locator)).first().click();
-            page.locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().click();
         }
     }
     /**
@@ -153,10 +153,10 @@ public class Button extends CommonHelper {
                 throw e;
             }
         } else {
-            boolean flag = page.locator(getLocator("" + locator)).first().isVisible();
+            boolean flag = getPageInstance().locator(getLocator("" + locator)).first().isVisible();
             if (!flag) {
                 ExplicitWait.hardWait(500);
-                flag = page.locator(getLocator("" + locator)).first().isVisible();
+                flag = getPageInstance().locator(getLocator("" + locator)).first().isVisible();
             }
             return flag;
         }
@@ -173,7 +173,7 @@ public class Button extends CommonHelper {
             AutoWait.autoWaitButton(locator);
             return getElement(locator).getText();
         } else {
-            return page.locator(getLocator("" + locator)).first().textContent();
+            return getPageInstance().locator(getLocator("" + locator)).first().textContent();
         }
     }
     /**
@@ -188,7 +188,7 @@ public class Button extends CommonHelper {
             AutoWait.autoWaitButton(locator);
             return locator.getText();
         } else {
-            return page.locator(getLocator("" + locator)).first().textContent();
+            return getPageInstance().locator(getLocator("" + locator)).first().textContent();
         }
     }
 }
