@@ -1,5 +1,6 @@
 package com.arc.frameworkWeb.helper;
 
+import com.arc.frameworkWeb.context.DriverManager;
 import com.microsoft.playwright.Page;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,11 +14,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 /**
  * CommonHelper class provides common utility methods for interacting with web elements and performing actions on them.
+ *
+ * Thread Safety:
+ * This class now supports both static (legacy) and ThreadLocal-based usage patterns.
+ * - For parallel execution, use DriverManager.setWebDriver(driver) to set thread-local instances
+ * - For single-threaded tests, the static webDriver and page fields still work (backward compatible)
+ * - The getDriver() and getPageInstance() methods automatically choose the appropriate instance
  */
 public class CommonHelper {
     //private static Logger log = LogManager.getLogManager().getLogger(CommonHelper.class.getName());
     private static Logger log= LogManager.getLogger(CommonHelper.class.getName());
+
+    /**
+     * @deprecated Use DriverManager.setWebDriver() and DriverManager.getWebDriver() for thread-safe parallel execution.
+     * This static field is maintained for backward compatibility only.
+     */
     public static WebDriver webDriver;
+
+    /**
+     * @deprecated Use DriverManager.setPage() and DriverManager.getPage() for thread-safe parallel execution.
+     * This static field is maintained for backward compatibility only.
+     */
     public static Page page;
 
     public CommonHelper(){
@@ -44,7 +61,7 @@ public class CommonHelper {
      */
     public static String getLocator(String locatorValueInSelenium){
 //        String type = "";
-         if (locatorValueInSelenium.contains("By.id")) {
+        if (locatorValueInSelenium.contains("By.id")) {
             String str = "By.id: combo-box-countries";
             String pattern = "By.id: (.+)";
             Pattern regex = Pattern.compile(pattern);
@@ -61,33 +78,67 @@ public class CommonHelper {
             return locatorValueInSelenium.substring(startIndex);
         }
 
-//        switch(locatorValueInSelenium) {
-//            case locatorValueInSelenium.:
-//                // code block
-//                break;
-//            case y:
-//                // code block
-//                break;
-//            default:
-//                // code block
-//        }
     }
     /**
+     * Gets the WebDriver instance for the current thread.
+     * Supports both ThreadLocal (preferred) and static (legacy) patterns.
+     *
+     * @return The WebDriver instance - either from ThreadLocal or static field
+     */
+    protected static WebDriver getDriver() {
+        // First, check if ThreadLocal driver exists (preferred for parallel execution)
+        if (DriverManager.hasWebDriver()) {
+            return DriverManager.getWebDriver();
+        }
+        // Fall back to static field for backward compatibility
+        if (webDriver != null) {
+            return webDriver;
+        }
+        throw new IllegalStateException(
+                "No WebDriver found. Either set static webDriver or call DriverManager.setWebDriver(driver)"
+        );
+    }
+
+    /**
+     * Gets the Playwright Page instance for the current thread.
+     * Supports both ThreadLocal (preferred) and static (legacy) patterns.
+     *
+     * @return The Page instance - either from ThreadLocal or static field
+     */
+    protected static Page getPageInstance() {
+        // First, check if ThreadLocal page exists (preferred for parallel execution)
+        if (DriverManager.hasPage()) {
+            return DriverManager.getPage();
+        }
+        // Fall back to static field for backward compatibility
+        if (page != null) {
+            return page;
+        }
+        throw new IllegalStateException(
+                "No Playwright Page found. Either set static page or call DriverManager.setPage(page)"
+        );
+    }
+
+    /**
      * Retrieves a WebElement using the given locator.
+     * Thread-safe: Uses getDriver() which supports both ThreadLocal and static patterns.
+     *
      * @param locator The locator to use for finding the element.
      * @return The found WebElement.
      */
     public static WebElement getElement(By locator) {
-            return webDriver.findElement(locator);
+        return getDriver().findElement(locator);
     }
     /**
      * Retrieves a list of WebElements using the given locator.
+     * Thread-safe: Uses getDriver() which supports both ThreadLocal and static patterns.
+     *
      * @param locator The locator to use for finding the elements.
      * @return The list of found WebElements.
      */
     public static List<WebElement> getListOfWebElements(By locator)
     {
-        return webDriver.findElements(locator);
+        return getDriver().findElements(locator);
     }
     /**
      * Performs actions that need to be done before performing an action on a web element.

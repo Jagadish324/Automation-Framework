@@ -925,14 +925,13 @@ Enable debug logging in `log4j2.xml`:
 - Check framework logs in `custom.log`
 - Contact framework maintainers
 
-[//]: # (## License)
+## License
 
-[//]: # ()
-[//]: # ([Specify your license here - MIT, Apache 2.0, Proprietary, etc.])
+[Specify your license here - MIT, Apache 2.0, Proprietary, etc.]
 
 ## Maintainers
 
-[Jagadish Sarkar - Automation Test Engineer](https://github.com/Jagadish324)
+[Add maintainer information]
 
 ## Recent Improvements
 
