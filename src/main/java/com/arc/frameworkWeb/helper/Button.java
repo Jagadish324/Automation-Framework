@@ -22,8 +22,8 @@ public class Button extends CommonHelper {
                 log.info("Element clicked successfully in first attempt to locator " + locator);
             } catch (ElementClickInterceptedException e) {
                 try {
-                getElement(locator).click();
-                log.info("Element clicked retry success to locator ElementClickInterceptedException" + locator);
+                    getElement(locator).click();
+                    log.info("Element clicked retry success to locator ElementClickInterceptedException" + locator);
                 }
                 catch (Exception f) {
                     JavaScriptExecutor.forceClickJSE(locator);

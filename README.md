@@ -925,13 +925,85 @@ Enable debug logging in `log4j2.xml`:
 - Check framework logs in `custom.log`
 - Contact framework maintainers
 
-## License
+[//]: # (## License)
 
-[Specify your license here - MIT, Apache 2.0, Proprietary, etc.]
+[//]: # ()
+[//]: # ([Specify your license here - MIT, Apache 2.0, Proprietary, etc.])
 
 ## Maintainers
 
-[Add maintainer information]
+[Jagadish Sarkar - Automation Test Engineer](https://github.com/Jagadish324)
+
+## Recent Improvements
+
+### Thread Safety & Parallel Execution (v0.0.2)
+
+**Major enhancement for parallel test execution!**
+
+The framework now supports **thread-safe parallel test execution** using ThreadLocal pattern:
+
+#### New Features
+
+1. **DriverManager Class** - ThreadLocal-based driver management
+    - Each test thread gets its own WebDriver/Page instance
+    - Automatic cleanup per thread
+    - No interference between parallel tests
+
+2. **TestContext Class** - Thread-safe configuration management
+    - Thread-local storage for test configuration
+    - Custom data storage per thread
+    - Replaces static CONSTANT fields
+
+3. **Updated Helper Classes** - Backward compatible improvements
+    - All helpers now support ThreadLocal pattern
+    - Automatic fallback to static fields (backward compatible)
+    - No breaking changes to existing code
+
+#### Benefits
+
+- ✅ **3x faster test execution** with parallel runs
+- ✅ **Complete test isolation** - no shared state between threads
+- ✅ **100% backward compatible** - existing tests work unchanged
+- ✅ **Better resource management** - automatic per-thread cleanup
+- ✅ **Ready for CI/CD** - parallel execution in build pipelines
+
+#### Quick Start
+
+```java
+// Old way (still works, but not parallel-safe)
+WebDriver driver = new ChromeDriver();
+CommonHelper.webDriver = driver;
+
+// New way (thread-safe, supports parallel execution)
+WebDriver driver = new ChromeDriver();
+DriverManager.setWebDriver(driver);  // Thread-local storage
+// ... run tests ...
+DriverManager.cleanup();  // Auto cleanup
+```
+
+#### Documentation
+
+- **[Migration Guide](MIGRATION_GUIDE_THREAD_SAFETY.md)** - Complete guide for upgrading
+- **[Example Tests](src/test/java/examples/)** - Working examples of parallel tests
+
+#### Performance
+
+```
+Before: Sequential execution
+Test 1 → Test 2 → Test 3 → Test 4
+Total: 40 seconds
+
+After: Parallel execution (4 threads)
+Test 1 ║
+Test 2 ║ Run concurrently
+Test 3 ║
+Test 4 ║
+Total: ~10 seconds (4x faster!)
+```
+
+See **[MIGRATION_GUIDE_THREAD_SAFETY.md](MIGRATION_GUIDE_THREAD_SAFETY.md)** for complete migration instructions.
+
+---
 
 ## Recent Improvements
 
@@ -1025,4 +1097,4 @@ See **[MIGRATION_GUIDE_THREAD_SAFETY.md](MIGRATION_GUIDE_THREAD_SAFETY.md)** for
 
 ---
 
-**Built with ❤️ for the automation community**
+[//]: # (**Built with ❤️ for the automation community**)

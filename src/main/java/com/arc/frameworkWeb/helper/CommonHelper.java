@@ -61,7 +61,7 @@ public class CommonHelper {
      */
     public static String getLocator(String locatorValueInSelenium){
 //        String type = "";
-         if (locatorValueInSelenium.contains("By.id")) {
+        if (locatorValueInSelenium.contains("By.id")) {
             String str = "By.id: combo-box-countries";
             String pattern = "By.id: (.+)";
             Pattern regex = Pattern.compile(pattern);
@@ -78,16 +78,6 @@ public class CommonHelper {
             return locatorValueInSelenium.substring(startIndex);
         }
 
-//        switch(locatorValueInSelenium) {
-//            case locatorValueInSelenium.:
-//                // code block
-//                break;
-//            case y:
-//                // code block
-//                break;
-//            default:
-//                // code block
-//        }
     }
     /**
      * Gets the WebDriver instance for the current thread.
@@ -105,7 +95,7 @@ public class CommonHelper {
             return webDriver;
         }
         throw new IllegalStateException(
-            "No WebDriver found. Either set static webDriver or call DriverManager.setWebDriver(driver)"
+                "No WebDriver found. Either set static webDriver or call DriverManager.setWebDriver(driver)"
         );
     }
 
@@ -125,7 +115,7 @@ public class CommonHelper {
             return page;
         }
         throw new IllegalStateException(
-            "No Playwright Page found. Either set static page or call DriverManager.setPage(page)"
+                "No Playwright Page found. Either set static page or call DriverManager.setPage(page)"
         );
     }
 
@@ -137,7 +127,7 @@ public class CommonHelper {
      * @return The found WebElement.
      */
     public static WebElement getElement(By locator) {
-            return getDriver().findElement(locator);
+        return getDriver().findElement(locator);
     }
     /**
      * Retrieves a list of WebElements using the given locator.
