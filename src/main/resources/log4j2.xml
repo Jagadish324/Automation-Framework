@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <logger name="org.apache" level="WARN" />
+    <logger name="httpclient" level="WARN" />
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{0} - %msg%n" />
+        </Console>
+        <File name="MyFile" fileName="custom.log" immediateFlush="false" append="false">
+            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{0} - %msg%n"/>
+        </File>
+
+        <!--        <Console type="Console" name="STDOUT" >-->
+        <!--            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />-->
+        <!--        </Console>-->
+
+        <!--        <File type="File" name="file" fileName="**/*Logs/app.log">-->
+        <!--            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>-->
+        <!--        </File>-->
+    </Appenders>
+    <Loggers>
+
+        <!--trace, debug, info, warn, error, fatal, all   :  These are the log levels in sequence order. It means whichever level you will mention, all the levels before it will not be considered in log -->
+        <Root level="debug">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="MyFile"/>
+        </Root>
+    </Loggers>
+</Configuration>
