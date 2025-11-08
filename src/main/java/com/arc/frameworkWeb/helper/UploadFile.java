@@ -42,9 +42,9 @@ public class UploadFile {
         if (CONSTANT.PLATFORM.equalsIgnoreCase("mac")) {
             String path = System.getProperty("user.dir") + "/resources/testData/" + "resourcePath";
             StringSelection ss = new StringSelection(path);
-            ExplicitWait.hardWait(500);
+            robot.delay(500); // Use Robot's built-in delay method
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
-            ExplicitWait.hardWait(500);
+            robot.delay(500); // Use Robot's built-in delay method
             String str = webDriver.getWindowHandle();
 
             webDriver.switchTo().window(webDriver.getWindowHandle());
@@ -71,11 +71,11 @@ public class UploadFile {
             //e.g. On current screen , Windows popup displays on almost 1/4th of the screen . So with reference to the same, file name x and y position is specified.
             //Note : Please note that coordinates calculated in this sample i.e. x and y may vary as per the screen resolution settings
             robot.mouseMove(x, y);
-            ExplicitWait.hardWait(1000);
+            robot.delay(1000); // Use Robot's built-in delay method
             //Clicks Left mouse button
             robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
             robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
-            ExplicitWait.hardWait(1000);
+            robot.delay(1000); // Use Robot's built-in delay method
             System.out.println("Browse button clicked");
             robot.keyPress(KeyEvent.VK_META);
             robot.keyPress(KeyEvent.VK_SHIFT);
@@ -127,11 +127,11 @@ public class UploadFile {
             //Setting clipboard with file location
             ExplicitWait.waitForVisibilityAndClickabilityOfElement(uploadButton);
             Button.click(uploadButton);
-            ExplicitWait.hardWait(4);
+            Robot robot = new Robot();
+            robot.delay(4000); // Use Robot's built-in delay method
             String fileLocation=System.getProperty("user.dir") + "\\uploadFile\\"+fileName;
             setClipboardData(fileLocation);
             //native key strokes for CTRL, V and ENTER keys
-            Robot robot = new Robot();
             robot.keyPress(KeyEvent.VK_CONTROL);
             robot.keyPress(KeyEvent.VK_V);
             robot.keyRelease(KeyEvent.VK_V);

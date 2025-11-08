@@ -2,9 +2,14 @@ package com.arc.frameworkWeb.helper;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import com.arc.frameworkWeb.utility.CONSTANT;
+import com.arc.frameworkWeb.exceptions.ElementNotFoundException;
+import com.arc.frameworkWeb.exceptions.ElementNotInteractableException;
+
+import java.time.Duration;
 
 public class AutoWait extends CommonHelper {
     private static Logger log= LogManager.getLogger(AutoWait.class.getName());
@@ -36,113 +41,138 @@ public class AutoWait extends CommonHelper {
 
     public static void autoWaitAlert() {
         try {
-            boolean flag = false;
-            for (int i = 0; i < CONSTANT.STEP_RETRY; i++) {
-                if (flag == false) {
-                    flag = Alerts.isAlertPresent();
-                    ExplicitWait.hardWait(1000);
-                }
-            }
+            int totalWaitTime = CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME;
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(totalWaitTime));
+            wait.pollingEvery(Duration.ofMillis(250))
+                .ignoring(NoAlertPresentException.class)
+                .until(ExpectedConditions.alertIsPresent());
+            log.info("Alert appeared within " + totalWaitTime + " seconds");
+        } catch (TimeoutException e) {
+            log.warn("Alert did not appear within " + (CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME) + " seconds");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error while waiting for alert", e);
         }
     }
 
     public static boolean waitForStability(By locator) {
-        boolean flag = false;
-        boolean flagVisibility = false;
-//        for (int i = 1; i <= CONSTANT.STEP_RETRY; i++) {
-//            try {
-//                ExplicitWait.waitForPresence(locator, CONSTANT.AUTOWAIT_TIME);
-//                flagPresence = true;
-//                System.out.println("Presence  " + flagPresence);
-//                break;
-//            } catch (Exception e) {
-//                System.out.println("Presence retry " + i);
-//            }
-//        }
+        try {
+            int totalWaitTime = CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME;
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(totalWaitTime));
+            wait.pollingEvery(Duration.ofMillis(250))
+                .ignoring(NoSuchElementException.class)
+                .ignoring(StaleElementReferenceException.class)
+                .ignoring(ElementNotVisibleException.class);
 
-            for (int i = 0; i < CONSTANT.STEP_RETRY; i++) {
-                try {
-                    ExplicitWait.waitForVisibility(locator, CONSTANT.AUTOWAIT_TIME);
-                    flagVisibility = true;
-                    log.info("Element visible for " + locator + " retry " + i + " flagVisibility");
-                    break;
-                } catch (Exception e) {
-                    log.info("Element visible for " + locator + " retry " + i);
-                }
+            WebElement element = wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+
+            // Verify element is truly displayed
+            if (!element.isDisplayed()) {
+                log.warn("Element found but not displayed: " + locator);
+                return false;
             }
 
-        if(flagVisibility) {
-            try {
-                flag = getElement(locator).isDisplayed();
-                log.info("Element displayed for " + locator);
-            } catch (Exception e) {
-                log.info("Element not displayed for " + locator);
-            }
-        }
-        if (flag) {
+            // Scroll into view if element is not in viewport
             JavaScriptExecutor.scrollIntoView(locator);
+            log.info("Element is stable and visible: " + locator);
+            return true;
+
+        } catch (TimeoutException e) {
+            log.warn("Element not visible within " + (CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME) + " seconds: " + locator);
+            return false;
+        } catch (NoSuchElementException e) {
+            throw new ElementNotFoundException(locator.toString(),
+                "Element not found: " + e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected error while waiting for element stability: " + locator, e);
+            return false;
         }
-        return flag;
     }
 
     public static boolean waitForStability(WebElement locator) {
-        boolean flag = false;
-        boolean flagVisibility = false;
-        for (int i = 0; i < CONSTANT.STEP_RETRY; i++) {
-            try {
-                ExplicitWait.waitForVisibility(locator, CONSTANT.AUTOWAIT_TIME);
-                flagVisibility = true;
-                log.info("Element Presence for " + locator +" is- "+ flagVisibility);
-//                System.out.println("Presence  " + flagVisibility);
-                break;
-            } catch (Exception e) {
-                log.info("Element Presence for " + locator +" retry is " + i);
+        try {
+            int totalWaitTime = CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME;
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(totalWaitTime));
+            wait.pollingEvery(Duration.ofMillis(250))
+                .ignoring(StaleElementReferenceException.class)
+                .ignoring(ElementNotVisibleException.class);
 
+            WebElement element = wait.until(ExpectedConditions.visibilityOf(locator));
+
+            // Verify element is truly displayed
+            if (!element.isDisplayed()) {
+                log.warn("Element found but not displayed");
+                return false;
             }
-        }
-        if(flagVisibility) {
-            try {
-                flag = locator.isDisplayed();
-                log.info("Element displayed for " + locator);
-            } catch (Exception e) {
-                log.info("Element not displayed for " + locator);
-            }
-        }
-        if (flag) {
+
+            // Scroll into view
             JavaScriptExecutor.scrollIntoView(locator);
+            log.info("Element is stable and visible");
+            return true;
+
+        } catch (TimeoutException e) {
+            log.warn("Element not visible within " + (CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME) + " seconds");
+            return false;
+        } catch (Exception e) {
+            log.error("Unexpected error while waiting for element stability", e);
+            return false;
         }
-        return flag;
     }
 
     public static void waitForStabilityAndClickable(By locator) {
-        boolean flag = waitForStability(locator);
-        if(flag) {
-            for (int i = 0; i < CONSTANT.STEP_RETRY; i++) {
-                try {
-                    ExplicitWait.waitForElementsToBeClickable(locator, CONSTANT.AUTOWAIT_TIME);
-                    log.info("Element clickable for " + locator);
-                    break;
-                } catch (Exception e) {
-                    log.info("Element clickable retry for " + locator + i);
-                }
+        try {
+            // First ensure element is stable and visible
+            if (!waitForStability(locator)) {
+                throw new ElementNotFoundException(locator.toString(),
+                    "Element is not stable or visible");
             }
+
+            // Then wait for it to be clickable
+            int totalWaitTime = CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME;
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(totalWaitTime));
+            wait.pollingEvery(Duration.ofMillis(250))
+                .ignoring(ElementClickInterceptedException.class)
+                .ignoring(StaleElementReferenceException.class);
+
+            wait.until(ExpectedConditions.elementToBeClickable(locator));
+            log.info("Element is stable and clickable: " + locator);
+
+        } catch (TimeoutException e) {
+            throw new ElementNotInteractableException("click", locator.toString(),
+                "Element not clickable within " + (CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME) + " seconds");
+        } catch (ElementNotFoundException e) {
+            throw e; // Re-throw as-is
+        } catch (Exception e) {
+            log.error("Unexpected error while waiting for element to be clickable: " + locator, e);
+            throw new ElementNotInteractableException("click", locator.toString(), e);
         }
     }
 
     public static void waitForStabilityAndClickable(WebElement locator) {
-        boolean flag = waitForStability(locator);
-        if(flag) {
-            for (int i = 0; i < CONSTANT.STEP_RETRY; i++) {
-                try {
-                    ExplicitWait.waitForElementsToBeClickable(locator, CONSTANT.AUTOWAIT_TIME);
-                    log.info("Element clickable for " + locator);
-                    break;
-                } catch (Exception e) {
-                    log.info("Element clickable retry for " + locator + i);
-                }
+        try {
+            // First ensure element is stable and visible
+            if (!waitForStability(locator)) {
+                throw new ElementNotInteractableException("click", locator.toString(),
+                    "Element is not stable or visible");
             }
+
+            // Then wait for it to be clickable
+            int totalWaitTime = CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME;
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(totalWaitTime));
+            wait.pollingEvery(Duration.ofMillis(250))
+                .ignoring(ElementClickInterceptedException.class)
+                .ignoring(StaleElementReferenceException.class);
+
+            wait.until(ExpectedConditions.elementToBeClickable(locator));
+            log.info("Element is stable and clickable");
+
+        } catch (TimeoutException e) {
+            throw new ElementNotInteractableException("click", locator.toString(),
+                "Element not clickable within " + (CONSTANT.STEP_RETRY * CONSTANT.AUTOWAIT_TIME) + " seconds");
+        } catch (ElementNotFoundException e) {
+            throw e; // Re-throw as-is
+        } catch (Exception e) {
+            log.error("Unexpected error while waiting for element to be clickable", e);
+            throw new ElementNotInteractableException("click", locator.toString(), e);
         }
     }
 }

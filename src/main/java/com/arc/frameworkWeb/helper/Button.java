@@ -153,12 +153,14 @@ public class Button extends CommonHelper {
                 throw e;
             }
         } else {
-            boolean flag = getPageInstance().locator(getLocator("" + locator)).first().isVisible();
-            if (!flag) {
-                ExplicitWait.hardWait(500);
-                flag = getPageInstance().locator(getLocator("" + locator)).first().isVisible();
+            // Playwright has built-in auto-waiting, use timeout option instead of hardWait
+            try {
+                return getPageInstance().locator(getLocator("" + locator)).first()
+                    .isVisible(new com.microsoft.playwright.Locator.IsVisibleOptions().setTimeout(500));
+            } catch (Exception e) {
+                log.debug("Element not visible: " + locator);
+                return false;
             }
-            return flag;
         }
     }
     /**

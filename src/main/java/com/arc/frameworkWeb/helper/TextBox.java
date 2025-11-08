@@ -22,7 +22,10 @@ public class TextBox extends CommonHelper {
             try {
                 getElement(locator).sendKeys(value);
             } catch (ElementNotInteractableException e) {
-                ExplicitWait.hardWait(1);
+                // AutoWait should have already handled waiting for interactability
+                // Log and retry once with explicit scroll into view
+                log.warn("Element not interactable after AutoWait, attempting scroll and retry: " + locator);
+                JavaScriptExecutor.scrollIntoView(locator);
                 getElement(locator).sendKeys(value);
             }
             afterPerformingAction();
@@ -64,7 +67,8 @@ public class TextBox extends CommonHelper {
             try {
                 getElement(locator).sendKeys(value);
             } catch (ElementNotInteractableException e) {
-                ExplicitWait.hardWait(1);
+                log.warn("Element not interactable after AutoWait, attempting scroll and retry: " + locator);
+                JavaScriptExecutor.scrollIntoView(locator);
                 getElement(locator).sendKeys(value);
             }
             afterPerformingAction();
@@ -85,7 +89,8 @@ public class TextBox extends CommonHelper {
         try {
             getElement(locator).sendKeys(value);
         } catch (ElementNotInteractableException e) {
-            ExplicitWait.hardWait(1);
+            log.warn("Element not interactable after AutoWait, attempting scroll and retry: " + locator);
+            JavaScriptExecutor.scrollIntoView(locator);
             getElement(locator).sendKeys(value);
         }
         afterPerformingAction();
@@ -103,7 +108,8 @@ public class TextBox extends CommonHelper {
         try {
             locator.sendKeys(value);
         } catch (ElementNotInteractableException e) {
-            ExplicitWait.hardWait(1);
+            log.warn("Element not interactable after AutoWait, attempting scroll and retry");
+            JavaScriptExecutor.scrollIntoView(locator);
             locator.sendKeys(value);
         }
         afterPerformingAction();
@@ -139,7 +145,8 @@ public class TextBox extends CommonHelper {
         try {
             locator.sendKeys(value);
         } catch (ElementNotInteractableException e) {
-            ExplicitWait.hardWait(1);
+            log.warn("Element not interactable after AutoWait, attempting scroll and retry");
+            JavaScriptExecutor.scrollIntoView(locator);
             locator.sendKeys(value);
         }
         afterPerformingAction();

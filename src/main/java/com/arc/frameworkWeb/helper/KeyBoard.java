@@ -43,7 +43,8 @@ public class KeyBoard extends CommonHelper{
         action.sendKeys("t");
         action.keyUp(Keys.CONTROL);
         action.perform();
-        ExplicitWait.hardWait(500);
+        // Wait for new tab to open using proper wait
+        ExplicitWait.waitForChildWindow();
         action.keyDown(Keys.CONTROL).keyDown(Keys.F4);
         action.keyUp(Keys.CONTROL).keyUp(Keys.F4);
     }

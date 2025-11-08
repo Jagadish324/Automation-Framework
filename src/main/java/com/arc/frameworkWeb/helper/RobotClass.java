@@ -39,7 +39,7 @@ public class RobotClass {
             throw new RuntimeException(e);
         }
         robot.keyPress(KeyEvent.VK_ENTER);
-        ExplicitWait.hardWait(500);
+        robot.delay(500); // Use Robot's built-in delay method
         robot.keyRelease(KeyEvent.VK_ENTER);
     }
 
@@ -64,7 +64,12 @@ public class RobotClass {
      */
     public static void openTabAndCloseTab() {
         openTab();
-        ExplicitWait.hardWait(500);
+        try {
+            Robot robot = new Robot();
+            robot.delay(500); // Use Robot's built-in delay method
+        } catch (AWTException e) {
+            throw new RuntimeException(e);
+        }
         closeTab();
     }
 

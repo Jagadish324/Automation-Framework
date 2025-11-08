@@ -8,6 +8,7 @@ import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import com.arc.frameworkWeb.utility.CONSTANT;
+import com.arc.frameworkWeb.exceptions.ElementNotFoundException;
 
 import java.time.Duration;
 import java.util.Set;
@@ -19,19 +20,26 @@ public class ExplicitWait extends CommonHelper {
     /**
      * Pauses the execution for the specified time.
      * @param timeValue The time to wait in milliseconds or seconds.
+     * @deprecated Use explicit waits with expected conditions instead of hardcoded delays.
+     * This method should be avoided as it causes performance issues and unreliable tests.
+     * Consider using {@link #waitForVisibility(By)}, {@link #waitForElementsToBeClickable(By)},
+     * or other conditional wait methods instead.
      */
+    @Deprecated
     public static void hardWait(int timeValue) {
+        log.warn("hardWait is deprecated and should be avoided. Use explicit waits with conditions instead.");
         try {
             if ((timeValue + "").length() >= 3) {
                 Thread.sleep(timeValue);
-                log.info("Waited for seconds " + timeValue);
+                log.info("Waited for " + timeValue + " milliseconds (DEPRECATED)");
             } else {
                 Thread.sleep(timeValue * 1000);
-                log.info("Waited for seconds" + timeValue);
+                log.info("Waited for " + timeValue + " seconds (DEPRECATED)");
             }
         } catch (InterruptedException e) {
-            log.info(e);
-            throw new RuntimeException(e);
+            log.error("Interrupted while waiting", e);
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Wait interrupted", e);
         }
     }
     /**
@@ -299,20 +307,16 @@ public class ExplicitWait extends CommonHelper {
     }
     /**
      * Waits for a child window to open.
-     * @return true if the child window is opened within the specified number of retries, false otherwise.
+     * @return true if the child window is opened within the specified timeout, false otherwise.
      */
-    public boolean waitForChildWindow() {
-        boolean status = false;
-        for (int i = 0; i < 5; i++) {
-            Set<String> windowHandles = webDriver.getWindowHandles();
-            if (windowHandles.size() > 1) {
-                status = true;
-                break;
-            } else {
-                ExplicitWait.hardWait(1000);
-            }
+    public static boolean waitForChildWindow() {
+        try {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            return wait.until(driver -> driver.getWindowHandles().size() > 1);
+        } catch (TimeoutException e) {
+            log.warn("Child window did not open within timeout of " + CONSTANT.EXPLICIT_WAIT + " seconds");
+            return false;
         }
-        return status;
     }
 
 }
