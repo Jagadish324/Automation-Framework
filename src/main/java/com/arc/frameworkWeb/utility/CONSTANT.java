@@ -15,7 +15,7 @@ import org.openqa.selenium.devtools.DevTools;
  * </ul>
  *
  * @author Automation Framework Team
- * @version 0.0.4
+ * @version 0.0.5
  */
 public class CONSTANT {
 

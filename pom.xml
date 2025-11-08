@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.arc</groupId>
     <artifactId>AutomationFramework</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.5-SNAPSHOT</version>
     <name>FrameWorkDesign</name>
     <!-- FIXME change it to the project's website -->
     <url>http://www.example.com</url>
@@ -130,23 +130,61 @@
             <artifactId>cucumber-junit-platform-engine</artifactId>
             <version>7.16.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
+        <!-- JUnit 5 (Jupiter) - Testing Framework -->
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit 5 API for writing tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.2</version>
+            <version>5.11.3</version>
+            <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-console -->
+
+        <!-- JUnit 5 Engine for running tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.11.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit 5 Parameterized Tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.11.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit Platform Console for standalone execution -->
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-console</artifactId>
-            <version>1.10.1</version>
+            <version>1.11.3</version>
+            <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-suite -->
+
+        <!-- JUnit Platform Suite for test suite execution -->
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite</artifactId>
-            <version>1.10.2</version>
+            <version>1.11.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit Platform Launcher for programmatic test execution -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>1.11.3</version>
+            <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
         <dependency>
@@ -484,16 +522,38 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+            <!-- Maven Surefire Plugin - Latest version with full JUnit 5 support -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.5</version>
+                <version>3.5.2</version>
                 <configuration>
+                    <!-- Enable parallel test execution -->
+                    <parallel>methods</parallel>
+                    <threadCount>4</threadCount>
+                    <perCoreThreadCount>true</perCoreThreadCount>
+
+                    <!-- JUnit 5 configuration -->
                     <properties>
                         <configurationParameters>
+                            <!-- Cucumber configuration -->
                             cucumber.junit-platform.naming-strategy=long
+
+                            <!-- JUnit 5 parallel execution configuration -->
+                            junit.jupiter.execution.parallel.enabled=true
+                            junit.jupiter.execution.parallel.mode.default=concurrent
+                            junit.jupiter.execution.parallel.mode.classes.default=concurrent
+                            junit.jupiter.execution.parallel.config.strategy=dynamic
+                            junit.jupiter.execution.parallel.config.dynamic.factor=1.0
                         </configurationParameters>
                     </properties>
+
+                    <!-- Include JUnit 5 test classes -->
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/Test*.java</include>
+                    </includes>
                 </configuration>
             </plugin>
         </plugins>

@@ -6,33 +6,50 @@ import com.arc.frameworkWeb.helper.Navigate;
 import com.arc.frameworkWeb.helper.TextBox;
 import com.arc.frameworkWeb.helper.Validation;
 import com.arc.helper.Log;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openqa.selenium.By;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Example test class demonstrating thread-safe parallel test execution.
+ * Example test class demonstrating thread-safe parallel test execution with JUnit 5.11.3.
  *
- * These tests can run in parallel without interfering with each other
- * because each thread has its own WebDriver instance managed by DriverManager.
+ * <p>These tests can run in parallel without interfering with each other
+ * because each thread has its own WebDriver instance managed by DriverManager.</p>
  *
- * To run in parallel, configure Maven Surefire or JUnit properties:
- * - junit.jupiter.execution.parallel.enabled=true
- * - junit.jupiter.execution.parallel.mode.default=concurrent
+ * <p><b>JUnit 5 Features Demonstrated:</b></p>
+ * <ul>
+ *   <li>@DisplayName - Descriptive test names for reports</li>
+ *   <li>@Tag - Categorize tests for selective execution</li>
+ *   <li>@Execution - Parallel execution configuration</li>
+ *   <li>Improved assertions with custom messages</li>
+ *   <li>Thread-safe test execution</li>
+ * </ul>
+ *
+ * <p>To run in parallel, configure Maven Surefire or JUnit properties:</p>
+ * <pre>
+ * junit.jupiter.execution.parallel.enabled=true
+ * junit.jupiter.execution.parallel.mode.default=concurrent
+ * </pre>
  *
  * @author Automation Framework Team
- * @version 1.0
+ * @version 2.0
+ * @since 0.0.5
  */
+@DisplayName("Login Feature - Parallel Test Suite")
+@Tag("login")
+@Tag("regression")
 @Execution(ExecutionMode.CONCURRENT)  // Enable parallel execution for this class
 public class ParallelLoginTest extends BaseTestThreadSafe {
 
     private static final String LOGIN_URL = "https://example.com/login";
 
     @Test
-    public void testValidLogin_User1() {
+    @DisplayName("Should successfully login with valid credentials for User 1")
+    @Tag("smoke")
+    void testValidLogin_User1() {
         Log.info("Starting test: testValidLogin_User1 on thread: {}", Thread.currentThread().getName());
 
         // Store test-specific data in thread-local context
@@ -49,15 +66,21 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
         // Click login button
         Button.click(By.id("loginButton"));
 
-        // Validate successful login
-        boolean isDashboardDisplayed = Validation.isDisplayed(By.className("dashboard"));
-        assertTrue(isDashboardDisplayed, "Dashboard should be displayed after valid login");
+        // Validate successful login with descriptive assertion message
+        assertAll("Login validation for User 1",
+            () -> assertTrue(Validation.isDisplayed(By.className("dashboard")),
+                "Dashboard should be displayed after valid login"),
+            () -> assertEquals("user1", TestContext.get("testUser", String.class),
+                "Test user should be stored in context")
+        );
 
         Log.info("Completed test: testValidLogin_User1");
     }
 
     @Test
-    public void testValidLogin_User2() {
+    @DisplayName("Should successfully login with valid credentials for User 2")
+    @Tag("smoke")
+    void testValidLogin_User2() {
         Log.info("Starting test: testValidLogin_User2 on thread: {}", Thread.currentThread().getName());
 
         TestContext.put("testUser", "user2");
@@ -70,14 +93,17 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
 
         Button.click(By.id("loginButton"));
 
-        boolean isDashboardDisplayed = Validation.isDisplayed(By.className("dashboard"));
-        assertTrue(isDashboardDisplayed, "Dashboard should be displayed after valid login");
+        assertTrue(Validation.isDisplayed(By.className("dashboard")),
+            () -> "Dashboard should be displayed after valid login for user: " +
+                  TestContext.get("testUser", String.class));
 
         Log.info("Completed test: testValidLogin_User2");
     }
 
     @Test
-    public void testInvalidLogin_WrongPassword() {
+    @DisplayName("Should display error message when login fails with wrong password")
+    @Tag("negative")
+    void testInvalidLogin_WrongPassword() {
         Log.info("Starting test: testInvalidLogin_WrongPassword on thread: {}", Thread.currentThread().getName());
 
         TestContext.put("testName", "testInvalidLogin_WrongPassword");
@@ -89,15 +115,22 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
 
         Button.click(By.id("loginButton"));
 
-        // Validate error message is displayed
-        boolean isErrorDisplayed = Validation.isDisplayed(By.className("error-message"));
-        assertTrue(isErrorDisplayed, "Error message should be displayed for invalid credentials");
+        // Validate error message is displayed with improved assertion
+        assertTrue(Validation.isDisplayed(By.className("error-message")),
+            "Error message should be displayed for invalid credentials");
+
+        // Additional validation that dashboard is NOT displayed
+        assertFalse(Validation.isDisplayed(By.className("dashboard")),
+            "Dashboard should not be displayed with invalid credentials");
 
         Log.info("Completed test: testInvalidLogin_WrongPassword");
     }
 
     @Test
-    public void testInvalidLogin_EmptyFields() {
+    @DisplayName("Should display validation error when submitting empty login form")
+    @Tag("negative")
+    @Tag("validation")
+    void testInvalidLogin_EmptyFields() {
         Log.info("Starting test: testInvalidLogin_EmptyFields on thread: {}", Thread.currentThread().getName());
 
         TestContext.put("testName", "testInvalidLogin_EmptyFields");
@@ -108,14 +141,16 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
         Button.click(By.id("loginButton"));
 
         // Validate validation message
-        boolean isValidationDisplayed = Validation.isDisplayed(By.className("validation-error"));
-        assertTrue(isValidationDisplayed, "Validation error should be displayed for empty fields");
+        assertTrue(Validation.isDisplayed(By.className("validation-error")),
+            "Validation error should be displayed for empty fields");
 
         Log.info("Completed test: testInvalidLogin_EmptyFields");
     }
 
     @Test
-    public void testForgotPassword() {
+    @DisplayName("Should navigate to forgot password page when clicking forgot password link")
+    @Tag("smoke")
+    void testForgotPassword() {
         Log.info("Starting test: testForgotPassword on thread: {}", Thread.currentThread().getName());
 
         TestContext.put("testName", "testForgotPassword");
@@ -126,8 +161,8 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
         Button.click(By.linkText("Forgot Password?"));
 
         // Validate we're on forgot password page
-        boolean isForgotPasswordPage = Validation.isDisplayed(By.id("reset-password-form"));
-        assertTrue(isForgotPasswordPage, "Should navigate to forgot password page");
+        assertTrue(Validation.isDisplayed(By.id("reset-password-form")),
+            "Reset password form should be displayed on forgot password page");
 
         Log.info("Completed test: testForgotPassword");
     }
