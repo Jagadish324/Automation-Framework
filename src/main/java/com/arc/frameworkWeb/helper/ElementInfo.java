@@ -20,7 +20,12 @@ public class ElementInfo extends CommonHelper {
     public static Boolean isDisplayed(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             boolean flag = false;
-            AutoWait.autoWait(locator);
+            try {
+                AutoWait.autoWait(locator);
+            } catch (Exception e) {
+                log.info("AutoWait failed for " + locator + ": " + e.getMessage());
+                return false;
+            }
             for (int i = 0; i < CONSTANT.STEP_RETRY; i++) {
                 try {
                     flag = getElement(locator).isDisplayed();
