@@ -14,8 +14,8 @@ public class CONSTANT {
     public static int POLLING_TIME;
     public static int DEFAULT_WAIT;
     public static String ORIGINAL_WINDOW;
-    public static int STEP_RETRY =1;
-    public static int AUTOWAIT_TIME =1;
+    public static int STEP_RETRY = 3;
+    public static int AUTOWAIT_TIME = 2;
     public static String BROAD_CAST_NAME;
     public static DevTools DEVTOOLS;
     public static int AUTO_DELAY_BEFORE_ACTION =0;
