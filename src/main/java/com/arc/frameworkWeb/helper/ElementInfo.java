@@ -1,6 +1,7 @@
 package com.arc.frameworkWeb.helper;
 
 import com.arc.frameworkWeb.utility.CONSTANT;
+import com.microsoft.playwright.options.BoundingBox;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.*;
@@ -101,8 +102,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return getElement(locator).getTagName();
         } else {
-//            return page.getByLabel(getLocator(""+locator));
-            return "";
+            return (String) getPageInstance().locator(getLocator("" + locator)).first().evaluate("el => el.tagName.toLowerCase()");
         }
     }
     /**
@@ -115,6 +115,10 @@ public class ElementInfo extends CommonHelper {
             rectangle = getElement(locator).getRect();
             return rectangle.getDimension();
         } else {
+            BoundingBox box = getPageInstance().locator(getLocator("" + locator)).first().boundingBox();
+            if (box != null) {
+                return new Dimension((int) box.width, (int) box.height);
+            }
             return null;
         }
     }
@@ -128,7 +132,7 @@ public class ElementInfo extends CommonHelper {
             rectangle = getElement(locator).getRect();
             return rectangle.getWidth();
         } else {
-            return 0;
+            return (int) getPageInstance().locator(getLocator("" + locator)).first().boundingBox().width;
         }
     }
     /**
@@ -141,7 +145,7 @@ public class ElementInfo extends CommonHelper {
             rectangle = getElement(locator).getRect();
             return rectangle.getHeight();
         } else {
-            return 0;
+            return (int) getPageInstance().locator(getLocator("" + locator)).first().boundingBox().height;
         }
     }
     /**
@@ -154,7 +158,7 @@ public class ElementInfo extends CommonHelper {
             rectangle = getElement(locator).getRect();
             return rectangle.getX();
         } else {
-            return 0;
+            return (int) getPageInstance().locator(getLocator("" + locator)).first().boundingBox().x;
         }
     }
     /**
@@ -167,7 +171,7 @@ public class ElementInfo extends CommonHelper {
             rectangle = getElement(locator).getRect();
             return rectangle.getY();
         } else {
-            return 0;
+            return (int) getPageInstance().locator(getLocator("" + locator)).first().boundingBox().y;
         }
     }
     /**
@@ -249,6 +253,7 @@ public class ElementInfo extends CommonHelper {
             }
             return valueList;
         } else {
+            log.info("Playwright does not support WebElement lists directly. Returning null.");
             return null;
         }
     }
@@ -264,7 +269,7 @@ public class ElementInfo extends CommonHelper {
             size = elementSize.size();
             return size;
         } else {
-            return 0;
+            return getPageInstance().locator(getLocator("" + locator)).count();
         }
     }
     /**
@@ -288,7 +293,6 @@ public class ElementInfo extends CommonHelper {
             return result;
         } else {
             String val = getPageInstance().locator(getLocator("" + element)).first().getAttribute(attribute);
-//            boolean flag =  ;
             return !(val==null);
         }
     }
@@ -324,7 +328,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return locator.getText();
         } else {
-            return null;
+            return getPageInstance().locator(getLocator("" + locator)).first().textContent();
         }
     }
 }
