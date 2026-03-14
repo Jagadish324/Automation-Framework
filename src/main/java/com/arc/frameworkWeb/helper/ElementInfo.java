@@ -31,7 +31,7 @@ public class ElementInfo extends CommonHelper {
             }
             return flag;
         } else {
-            return page.isVisible(getLocator("" + locator));
+            return getPageInstance().isVisible(getLocator("" + locator));
         }
     }
     /**
@@ -43,7 +43,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return getElement(locator).isDisplayed();
         } else {
-            return page.isVisible(getLocator("" + locator));
+            return getPageInstance().isVisible(getLocator("" + locator));
         }
     }
     /**
@@ -65,7 +65,7 @@ public class ElementInfo extends CommonHelper {
             }
             return flag;
         } else {
-            return page.isVisible(getLocator("" + locator));
+            return getPageInstance().isVisible(getLocator("" + locator));
         }
     }
     /**
@@ -77,7 +77,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return getElement(locator).isEnabled();
         } else {
-            return page.isEnabled(getLocator("" + locator));
+            return getPageInstance().isEnabled(getLocator("" + locator));
         }
     }
     /**
@@ -89,7 +89,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return getElement(locator).isSelected();
         } else {
-            return page.isChecked(getLocator("" + locator));
+            return getPageInstance().isChecked(getLocator("" + locator));
         }
     }
     /**
@@ -180,7 +180,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return getElement(locator).getCssValue(cssAttribute);
         } else {
-            return page.locator(getLocator("" + locator)).first().getAttribute(cssAttribute);
+            return getPageInstance().locator(getLocator("" + locator)).first().getAttribute(cssAttribute);
         }
     }
     /**
@@ -193,7 +193,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return locator.getCssValue(cssAttribute);
         } else {
-            return page.getAttribute(getLocator("" + locator), cssAttribute);
+            return getPageInstance().getAttribute(getLocator("" + locator), cssAttribute);
         }
     }
     /**
@@ -207,7 +207,7 @@ public class ElementInfo extends CommonHelper {
             AutoWait.autoWaitButton(locator);
             return getElement(locator).getAttribute(attribute);
         } else {
-            return page.locator(getLocator("" + locator)).first().getAttribute(attribute);
+            return getPageInstance().locator(getLocator("" + locator)).first().getAttribute(attribute);
         }
     }
     /**
@@ -220,7 +220,7 @@ public class ElementInfo extends CommonHelper {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             return locator.getAttribute(attribute);
         } else {
-            return page.locator(getLocator("" + locator)).first().getAttribute(attribute);
+            return getPageInstance().locator(getLocator("" + locator)).first().getAttribute(attribute);
         }
     }
     /**
@@ -231,9 +231,9 @@ public class ElementInfo extends CommonHelper {
     public static String getText(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             AutoWait.autoWait(locator);
-            return webDriver.findElement(locator).getText();
+            return getDriver().findElement(locator).getText();
         } else {
-            return page.locator(getLocator("" + locator)).first().textContent();
+            return getPageInstance().locator(getLocator("" + locator)).first().textContent();
         }
     }
     /**
@@ -287,7 +287,7 @@ public class ElementInfo extends CommonHelper {
             }
             return result;
         } else {
-            String val = page.locator(getLocator("" + element)).first().getAttribute(attribute);
+            String val = getPageInstance().locator(getLocator("" + element)).first().getAttribute(attribute);
 //            boolean flag =  ;
             return !(val==null);
         }

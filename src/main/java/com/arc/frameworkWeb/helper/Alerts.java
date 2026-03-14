@@ -17,7 +17,7 @@ public class Alerts extends CommonHelper{
      */
     public static Alert getAlert() {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            return webDriver.switchTo().alert();
+            return getDriver().switchTo().alert();
         }else {
             return null;
         }
@@ -30,8 +30,8 @@ public class Alerts extends CommonHelper{
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             getAlert().accept();
         }else {
-            page.onDialog(Dialog::accept);
-            page.getByRole(AriaRole.BUTTON).click();
+            getPageInstance().onDialog(Dialog::accept);
+            getPageInstance().getByRole(AriaRole.BUTTON).click();
         }
     }
     /**
@@ -42,8 +42,8 @@ public class Alerts extends CommonHelper{
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             getAlert().dismiss();
         }else {
-            page.onDialog(Dialog::dismiss);
-            page.getByRole(AriaRole.BUTTON).click();
+            getPageInstance().onDialog(Dialog::dismiss);
+            getPageInstance().getByRole(AriaRole.BUTTON).click();
         }
 
     }
@@ -56,8 +56,8 @@ public class Alerts extends CommonHelper{
             AutoWait.autoWaitAlert();
             return getAlert().getText();
         }else {
-            page.onDialog(Dialog::message);
-            return page.getByRole(AriaRole.ALERT).textContent();
+            getPageInstance().onDialog(Dialog::message);
+            return getPageInstance().getByRole(AriaRole.ALERT).textContent();
         }
     }
     /*
@@ -67,42 +67,37 @@ public class Alerts extends CommonHelper{
      */
     public static boolean isAlertPresent() {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-
-        }else {
-
-        }
-        try {
-            webDriver.switchTo().alert();
-            return true;
-        } catch (NoAlertPresentException e) {
-            return false;
+            try {
+                getDriver().switchTo().alert();
+                return true;
+            } catch (NoAlertPresentException e) {
+                return false;
+            }
+        } else {
+            // Playwright does not have a direct "is alert present" check;
+            // register a one-shot handler and check via a flag
+            boolean[] present = {false};
+            getPageInstance().onceDialog(dialog -> {
+                present[0] = true;
+                dialog.dismiss();
+            });
+            return present[0];
         }
     }
 
     /**
-     * Checks whether an alert is present, depending on the testing tool (Selenium or Playwright).
-     * @return true if an alert is present, false otherwise.
+     * Accepts the alert if present; no-op otherwise.
      */
     public static void AcceptAlertIfPresent() {
-        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-
-        }else {
-
-        }
         if (!isAlertPresent())
             return;
         acceptAlert();
     }
 
-    /*
-     * Accept if alert is present or else return boolean value
+    /**
+     * Dismisses the alert if present; no-op otherwise.
      */
     public static void DismissAlertIfPresent() {
-        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-
-        }else {
-
-        }
         if (!isAlertPresent())
             return;
         dismissAlert();
@@ -114,14 +109,15 @@ public class Alerts extends CommonHelper{
      */
     public static void acceptPrompt(String text) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-
-        }else {
-
+            if (!isAlertPresent())
+                return;
+            org.openqa.selenium.Alert alert = getAlert();
+            alert.sendKeys(text);
+            alert.accept();
+        } else {
+            getPageInstance().onDialog(dialog -> {
+                dialog.accept(text);
+            });
         }
-        if (!isAlertPresent())
-            return;
-        org.openqa.selenium.Alert alert = getAlert();
-        alert.sendKeys(text);
-        alert.accept();
     }
 }

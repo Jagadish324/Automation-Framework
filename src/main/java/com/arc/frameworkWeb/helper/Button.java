@@ -37,7 +37,7 @@ public class Button extends CommonHelper {
 //            }
             afterPerformingAction();
         } else {
-            page.locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().click();
         }
     }
     /**
@@ -116,8 +116,7 @@ public class Button extends CommonHelper {
             getElement(locator).click();
             afterPerformingAction();
         } else {
-            getPageInstance().locator(getLocator("" + locator)).first().click();
-            getPageInstance().locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().dblclick();
         }
     }
     /**
@@ -134,8 +133,7 @@ public class Button extends CommonHelper {
             locator.click();
             afterPerformingAction();
         } else {
-            getPageInstance().locator(getLocator("" + locator)).first().click();
-            getPageInstance().locator(getLocator("" + locator)).first().click();
+            getPageInstance().locator(getLocator("" + locator)).first().dblclick();
         }
     }
     /**

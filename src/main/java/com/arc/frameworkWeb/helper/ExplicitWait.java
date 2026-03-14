@@ -1,5 +1,6 @@
 package com.arc.frameworkWeb.helper;
 
+import com.arc.frameworkWeb.context.PlaywrightManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.*;
@@ -40,10 +41,16 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForVisibility(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
             log.info("Waiting for visibility of elements located by " + locator + " at interval of 500ms for " + CONSTANT.EXPLICIT_WAIT);
             wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             log.info("element is visible in ");
+        } else {
+            log.info("Waiting for visibility of elements located by " + locator);
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
+            log.info("element is visible");
         }
     }
     /**
@@ -52,8 +59,12 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForPresence(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
             wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED));
         }
     }
     /**
@@ -62,10 +73,26 @@ public class ExplicitWait extends CommonHelper {
      * @param attribute The attribute to check.
      * @param value The value to contain in the attribute.
      */
-    public static void waitForAttributeContains(By locator, String attribute,  String value) {
+    public static void waitForAttributeContains(By locator, String attribute, String value) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-            wait.until(ExpectedConditions.attributeContains(locator,attribute,value));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.until(ExpectedConditions.attributeContains(locator, attribute, value));
+        } else {
+            long timeout = CONSTANT.EXPLICIT_WAIT * 1000L;
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < timeout) {
+                String attrValue = getPageInstance().locator(getLocator("" + locator)).first().getAttribute(attribute);
+                if (attrValue != null && attrValue.contains(value)) {
+                    return;
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }
+            throw new RuntimeException("Timed out waiting for attribute '" + attribute + "' to contain '" + value + "' on locator " + locator);
         }
     }
     /**
@@ -74,10 +101,12 @@ public class ExplicitWait extends CommonHelper {
      * @param attribute The attribute to check.
      * @param value The value to contain in the attribute.
      */
-    public static void waitForAttributeContains(WebElement locator, String attribute,  String value) {
+    public static void waitForAttributeContains(WebElement locator, String attribute, String value) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-            wait.until(ExpectedConditions.attributeContains(locator,attribute,value));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.until(ExpectedConditions.attributeContains(locator, attribute, value));
+        } else {
+            log.info("Playwright auto-waits; WebElement-based attribute wait is not directly supported.");
         }
     }
     /**
@@ -86,8 +115,12 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void fluentWaitForPresence(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            Wait wait = new FluentWait<WebDriver>(webDriver).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(500)).ignoring(Exception.class);
+            Wait wait = new FluentWait<WebDriver>(getDriver()).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(500)).ignoring(Exception.class);
             wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED));
         }
     }
     /**
@@ -95,10 +128,14 @@ public class ExplicitWait extends CommonHelper {
      * @param locator The locator for the element.
      * @param pollingTime The polling time is seconds
      */
-    public static void fluentWaitForPresence(By locator,int pollingTime) {
+    public static void fluentWaitForPresence(By locator, int pollingTime) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            Wait wait = new FluentWait<WebDriver>(webDriver).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(pollingTime)).ignoring(Exception.class);
+            Wait wait = new FluentWait<WebDriver>(getDriver()).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(pollingTime)).ignoring(Exception.class);
             wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED));
         }
     }
     /**
@@ -107,8 +144,12 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void fluentWaitForClickable(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            Wait wait = new FluentWait<WebDriver>(webDriver).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(500)).ignoring(Exception.class);
+            Wait wait = new FluentWait<WebDriver>(getDriver()).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(500)).ignoring(Exception.class);
             wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
         }
     }
     /**
@@ -118,8 +159,12 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void fluentWaitForClickable(By locator, int pollingTime) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            Wait wait = new FluentWait<WebDriver>(webDriver).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(pollingTime)).ignoring(Exception.class);
+            Wait wait = new FluentWait<WebDriver>(getDriver()).withTimeout(Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT)).pollingEvery(Duration.ofMillis(pollingTime)).ignoring(Exception.class);
             wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
         }
     }
     /**
@@ -128,8 +173,10 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForVisibility(WebElement locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
             wait.until(ExpectedConditions.visibilityOf(locator));
+        } else {
+            log.info("Playwright auto-waits for visibility; WebElement-based wait is not directly supported.");
         }
     }
     /**
@@ -138,9 +185,11 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForVisibilityAndClickabilityOfElement(WebElement locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
             wait.until(ExpectedConditions.visibilityOf(locator));
             wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            log.info("Playwright auto-waits for visibility and clickability; WebElement-based wait is not directly supported.");
         }
     }
     /**
@@ -149,9 +198,13 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForVisibilityAndClickabilityOfElement(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
             wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
             wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
         }
     }
     /**
@@ -159,18 +212,31 @@ public class ExplicitWait extends CommonHelper {
      * @param locator The locator of the element to wait for.
      */
     public static void waitForVisibilityAndInvisibility(By locator) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+            wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+        }
     }
     /**
      * Waits for the visibility and invisibility of the given WebElement.
      * @param locator The WebElement to wait for.
      */
     public static void waitForVisibilityAndInvisibility(WebElement locator) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-        wait.until(ExpectedConditions.visibilityOf(locator));
-        wait.until(ExpectedConditions.invisibilityOf(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.until(ExpectedConditions.visibilityOf(locator));
+            wait.until(ExpectedConditions.invisibilityOf(locator));
+        } else {
+            log.info("Playwright auto-waits; WebElement-based visibility/invisibility wait is not directly supported.");
+        }
     }
     /**
      * Waits for the given element specified by the locator to be clickable.
@@ -178,8 +244,12 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForElementsToBeClickable(By locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
             wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE));
         }
     }
     /**
@@ -188,8 +258,10 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForElementsToBeClickable(WebElement locator) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
             wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            log.info("Playwright auto-waits for clickability; WebElement-based wait is not directly supported.");
         }
     }
 
@@ -203,8 +275,13 @@ public class ExplicitWait extends CommonHelper {
      */
     public static void waitForVisibility(By locator, int pollingTime) {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(pollingTime));
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(pollingTime));
             wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
+                            .setTimeout(pollingTime * 1000.0));
         }
     }
     /**
@@ -213,8 +290,15 @@ public class ExplicitWait extends CommonHelper {
      * @param pollingTime The custom polling time in seconds.
      */
     public static void waitForPresence(By locator, int pollingTime) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(pollingTime));
-        wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(pollingTime));
+            wait.until(ExpectedConditions.presenceOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED)
+                            .setTimeout(pollingTime * 1000.0));
+        }
     }
     /**
      * Waits for the given element specified by the locator to be clickable with a custom polling time.
@@ -222,8 +306,15 @@ public class ExplicitWait extends CommonHelper {
      * @param pollingTime The custom polling time in seconds.
      */
     public static void waitForElementsToBeClickable(By locator, int pollingTime) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(pollingTime));
-        wait.until(ExpectedConditions.elementToBeClickable(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(pollingTime));
+            wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.VISIBLE)
+                            .setTimeout(pollingTime * 1000.0));
+        }
     }
     /**
      * Waits for the visibility of the given WebElement with a custom polling time.
@@ -231,8 +322,12 @@ public class ExplicitWait extends CommonHelper {
      * @param pollingTime The custom polling time in seconds.
      */
     public static void waitForVisibility(WebElement locator, int pollingTime) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(pollingTime));
-        wait.until(ExpectedConditions.visibilityOf(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(pollingTime));
+            wait.until(ExpectedConditions.visibilityOf(locator));
+        } else {
+            log.info("Playwright auto-waits for visibility; WebElement-based wait is not directly supported.");
+        }
     }
     /**
      * Waits for the given WebElement to be clickable with a custom polling time.
@@ -240,23 +335,50 @@ public class ExplicitWait extends CommonHelper {
      * @param pollingTime The custom polling time in seconds.
      */
     public static void waitForElementsToBeClickable(WebElement locator, int pollingTime) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(pollingTime));
-        wait.until(ExpectedConditions.elementToBeClickable(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(pollingTime));
+            wait.until(ExpectedConditions.elementToBeClickable(locator));
+        } else {
+            log.info("Playwright auto-waits for clickability; WebElement-based wait is not directly supported.");
+        }
     }
     /**
      * Waits until the number of windows is equal to the specified count.
      */
     public static void waitUntilWindowOpen() {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-        wait.until(numberOfWindowsToBe(2));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.until(numberOfWindowsToBe(2));
+        } else {
+            long timeout = CONSTANT.EXPLICIT_WAIT * 1000L;
+            long start = System.currentTimeMillis();
+            while (System.currentTimeMillis() - start < timeout) {
+                if (PlaywrightManager.getBrowserContext().pages().size() > 1) {
+                    return;
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException(e);
+                }
+            }
+            throw new RuntimeException("Timed out waiting for a new window/tab to open.");
+        }
     }
     /**
      * Waits for the element specified by the locator to become invisible.
      * @param locator The locator of the element to wait for.
      */
     public static void waitForInvisibilityOfElement(By locator) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-        wait.ignoring(StaleElementReferenceException.class).until(ExpectedConditions.invisibilityOfElementLocated(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.ignoring(StaleElementReferenceException.class).until(ExpectedConditions.invisibilityOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN));
+        }
     }
     /**
      * Waits for the element specified by the locator to become invisible.
@@ -264,38 +386,61 @@ public class ExplicitWait extends CommonHelper {
      * @param pollingTime The custom polling time in seconds
      */
     public static void waitForInvisibilityOfElement(By locator, int pollingTime) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(pollingTime));
-        wait.ignoring(StaleElementReferenceException.class).until(ExpectedConditions.invisibilityOfElementLocated(locator));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(pollingTime));
+            wait.ignoring(StaleElementReferenceException.class).until(ExpectedConditions.invisibilityOfElementLocated(locator));
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.HIDDEN)
+                            .setTimeout(pollingTime * 1000.0));
+        }
     }
     /**
      * Turns on implicit waits with the specified timeout.
      */
     public static void turnOnImplicitWaits() {
-        webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(CONSTANT.IMPLICIT_WAIT));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(CONSTANT.IMPLICIT_WAIT));
+        } else {
+            log.info("Playwright has built-in auto-waiting; implicit waits are not applicable.");
+        }
     }
     /**
      * Waits until a frame with the specified locator is available and switches to it.
      * @param frameLocator The locator of the frame to wait for.
      */
     public static void waitAndSwitchToFrame(By frameLocator) {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(frameLocator));
-
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(frameLocator));
+        } else {
+            getPageInstance().locator(getLocator("" + frameLocator)).first().waitFor(
+                    new com.microsoft.playwright.Locator.WaitForOptions()
+                            .setState(com.microsoft.playwright.options.WaitForSelectorState.ATTACHED));
+            log.info("Playwright frame located. Use frameLocator() API to interact with frame content.");
+        }
     }
     /**
      * Waits until the page is fully loaded.
      */
     public static void waitUntilThePageIsLoaded() {
-        WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
-        //JavascriptExecutor jsExecutor = (JavascriptExecutor) WebDriverFactory.getDriver();
-        wait.until((webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete")));
-
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            WebDriverWait wait = new WebDriverWait(getDriver(), Duration.ofSeconds(CONSTANT.EXPLICIT_WAIT));
+            wait.until((webDriver -> ((JavascriptExecutor) webDriver).executeScript("return document.readyState").equals("complete")));
+        } else {
+            getPageInstance().waitForLoadState(com.microsoft.playwright.options.LoadState.LOAD);
+        }
     }
     /**
      * Turns off implicit waits.
      */
     public static void turnOffImplicitWaits() {
-        webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            getDriver().manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
+        } else {
+            log.info("Playwright has built-in auto-waiting; implicit waits are not applicable.");
+        }
     }
     /**
      * Waits for a child window to open.
@@ -303,13 +448,24 @@ public class ExplicitWait extends CommonHelper {
      */
     public boolean waitForChildWindow() {
         boolean status = false;
-        for (int i = 0; i < 5; i++) {
-            Set<String> windowHandles = webDriver.getWindowHandles();
-            if (windowHandles.size() > 1) {
-                status = true;
-                break;
-            } else {
-                ExplicitWait.hardWait(1000);
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            for (int i = 0; i < 5; i++) {
+                Set<String> windowHandles = getDriver().getWindowHandles();
+                if (windowHandles.size() > 1) {
+                    status = true;
+                    break;
+                } else {
+                    ExplicitWait.hardWait(1000);
+                }
+            }
+        } else {
+            for (int i = 0; i < 5; i++) {
+                if (PlaywrightManager.getBrowserContext().pages().size() > 1) {
+                    status = true;
+                    break;
+                } else {
+                    ExplicitWait.hardWait(1000);
+                }
             }
         }
         return status;

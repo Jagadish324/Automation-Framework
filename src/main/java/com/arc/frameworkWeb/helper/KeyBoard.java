@@ -18,8 +18,10 @@ public class KeyBoard extends CommonHelper{
      */
     public static void pressKeyUP() {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            action = new Actions(webDriver);
+            action = new Actions(getDriver());
             action.sendKeys(Keys.ARROW_UP).build().perform();
+        } else {
+            getPageInstance().keyboard().press("ArrowUp");
         }
     }
     /**
@@ -27,33 +29,53 @@ public class KeyBoard extends CommonHelper{
      * @param keyValue The key value to be sent after holding down CONTROL and SHIFT keys.
      */
     public static void pressControlShift(String keyValue){
-        action = new Actions(webDriver);
-        action.keyDown(Keys.CONTROL).keyDown(Keys.SHIFT);
-        action.sendKeys(keyValue);
-        action.keyUp(Keys.CONTROL).keyUp(Keys.SHIFT);
-        action.perform();
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            action = new Actions(getDriver());
+            action.keyDown(Keys.CONTROL).keyDown(Keys.SHIFT);
+            action.sendKeys(keyValue);
+            action.keyUp(Keys.CONTROL).keyUp(Keys.SHIFT);
+            action.perform();
+        } else {
+            getPageInstance().keyboard().down("Control");
+            getPageInstance().keyboard().down("Shift");
+            getPageInstance().keyboard().press(keyValue);
+            getPageInstance().keyboard().up("Shift");
+            getPageInstance().keyboard().up("Control");
+        }
     }
 
     /**
      * Opens a new tab and then closes it.
      */
     public static void openTabAndCloseTab(){
-        action = new Actions(webDriver);
-        action.keyDown(Keys.CONTROL);
-        action.sendKeys("t");
-        action.keyUp(Keys.CONTROL);
-        action.perform();
-        ExplicitWait.hardWait(500);
-        action.keyDown(Keys.CONTROL).keyDown(Keys.F4);
-        action.keyUp(Keys.CONTROL).keyUp(Keys.F4);
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            action = new Actions(getDriver());
+            action.keyDown(Keys.CONTROL);
+            action.sendKeys("t");
+            action.keyUp(Keys.CONTROL);
+            action.perform();
+            ExplicitWait.hardWait(500);
+            action.keyDown(Keys.CONTROL).keyDown(Keys.F4);
+            action.keyUp(Keys.CONTROL).keyUp(Keys.F4);
+        } else {
+            getPageInstance().keyboard().down("Control");
+            getPageInstance().keyboard().press("t");
+            getPageInstance().keyboard().up("Control");
+            ExplicitWait.hardWait(500);
+            getPageInstance().keyboard().down("Control");
+            getPageInstance().keyboard().press("F4");
+            getPageInstance().keyboard().up("Control");
+        }
     }
     /**
      * Presses the DOWN arrow key.
      */
     public static void pressDown() {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            action = new Actions(webDriver);
+            action = new Actions(getDriver());
             action.sendKeys(Keys.ARROW_DOWN).build().perform();
+        } else {
+            getPageInstance().keyboard().press("ArrowDown");
         }
     }
     /**
@@ -61,8 +83,10 @@ public class KeyBoard extends CommonHelper{
      */
     public static void pressEnter(){
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            action = new Actions(webDriver);
+            action = new Actions(getDriver());
             action.sendKeys(Keys.ENTER).build().perform();
+        } else {
+            getPageInstance().keyboard().press("Enter");
         }
     }
     /**
@@ -73,6 +97,8 @@ public class KeyBoard extends CommonHelper{
     {
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             getElement(locator).sendKeys(Keys.ENTER);
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().press("Enter");
         }
     }
     /**
@@ -80,8 +106,21 @@ public class KeyBoard extends CommonHelper{
      */
     public static void pressTab(){
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            action = new Actions(webDriver);
+            action = new Actions(getDriver());
             action.sendKeys(Keys.TAB).build().perform();
+        } else {
+            getPageInstance().keyboard().press("Tab");
+        }
+    }
+    /**
+     * Presses the ESCAPE key.
+     */
+    public static void pressEscape(){
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            action = new Actions(getDriver());
+            action.sendKeys(Keys.ESCAPE).build().perform();
+        } else {
+            getPageInstance().keyboard().press("Escape");
         }
     }
     /**
@@ -92,9 +131,9 @@ public class KeyBoard extends CommonHelper{
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
             AutoWait.waitForStability(locator);
             Mouse.mouseClick(locator);
-            action = new Actions(webDriver);
+            action = new Actions(getDriver());
             if (CONSTANT.PLATFORM.equalsIgnoreCase("mac")) {
-                action.click(webDriver.findElement(locator))
+                action.click(getDriver().findElement(locator))
                         .keyDown(Keys.COMMAND)
                         .sendKeys("a")
                         .keyUp(Keys.COMMAND)
@@ -102,7 +141,7 @@ public class KeyBoard extends CommonHelper{
                         .build()
                         .perform();
             } else {
-                action.click(webDriver.findElement(locator))
+                action.click(getDriver().findElement(locator))
                         .keyDown(Keys.CONTROL)
                         .sendKeys("a")
                         .keyUp(Keys.CONTROL)
@@ -110,6 +149,9 @@ public class KeyBoard extends CommonHelper{
                         .build()
                         .perform();
             }
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().selectText();
+            getPageInstance().keyboard().press("Delete");
         }
     }
     /**
@@ -119,8 +161,10 @@ public class KeyBoard extends CommonHelper{
      */
     public static void sendText(By locator, String value){
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            action = new Actions(webDriver);
+            action = new Actions(getDriver());
             action.sendKeys(getElement(locator), value).perform();
+        } else {
+            getPageInstance().locator(getLocator("" + locator)).first().pressSequentially(value);
         }
     }
     /**
@@ -131,7 +175,7 @@ public class KeyBoard extends CommonHelper{
      */
     public static void copyPasteField(By locator, String value1, String value2){
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            action = new Actions(webDriver);
+            action = new Actions(getDriver());
             Keys cmdCtrl = platformName.is(Platform.MAC) ? Keys.COMMAND : Keys.CONTROL;
             action.sendKeys(getElement(locator), value1)
                     .sendKeys(Keys.ARROW_LEFT)
@@ -142,6 +186,11 @@ public class KeyBoard extends CommonHelper{
                     .sendKeys(value2)
                     .keyUp(cmdCtrl)
                     .perform();
+        } else {
+            com.microsoft.playwright.Locator pwLocator = getPageInstance().locator(getLocator("" + locator)).first();
+            pwLocator.fill(value1);
+            String currentValue = pwLocator.inputValue();
+            pwLocator.fill(value2);
         }
     }
 }

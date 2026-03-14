@@ -27,7 +27,7 @@ public class TextBox extends CommonHelper {
             }
             afterPerformingAction();
         } else {
-            page.locator(getLocator(""+locator)).first().fill(value);
+            getPageInstance().locator(getLocator(""+locator)).first().fill(value);
         }
     }
     /**
@@ -69,7 +69,7 @@ public class TextBox extends CommonHelper {
             }
             afterPerformingAction();
         } else {
-            page.locator(getLocator(""+locator)).first().fill(value);
+            getPageInstance().locator(getLocator(""+locator)).first().fill(value);
         }
     }
     /**
@@ -171,7 +171,7 @@ public class TextBox extends CommonHelper {
         str = getElement(locator).getText();
         return str;
         }else {
-            return page.locator(getLocator(""+locator)).first().textContent();
+            return getPageInstance().locator(getLocator(""+locator)).first().textContent();
         }
     }
     /**
@@ -189,7 +189,7 @@ public class TextBox extends CommonHelper {
             str = locator.getText();
             return str;
         }else {
-            return page.locator(getLocator(""+locator)).first().textContent();
+            return getPageInstance().locator(getLocator(""+locator)).first().textContent();
         }
     }
     /**
@@ -204,7 +204,7 @@ public class TextBox extends CommonHelper {
         Button.click(locator);
         KeyBoard.pressDown();
         if(textLength > 0) {
-            Actions action = new Actions(webDriver);
+            Actions action = new Actions(getDriver());
             for (int i = 0; i < textLength; i++) {
                 action.sendKeys(Keys.BACK_SPACE).perform();
             }

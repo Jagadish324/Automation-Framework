@@ -1,5 +1,6 @@
 package com.arc.frameworkWeb.helper;
 
+import com.arc.frameworkWeb.utility.CONSTANT;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 public class ScreenShot extends CommonHelper {
     private static Logger log= LogManager.getLogger(ScreenShot.class.getName());
@@ -22,11 +24,16 @@ public class ScreenShot extends CommonHelper {
      * @return The file object representing the saved screenshot
      */
     public static File takeScreenShot(String pathName) {
-        File fileA = ((TakesScreenshot) webDriver).getScreenshotAs(OutputType.FILE);
-        try {
-            FileUtils.copyFile(fileA, new File(pathName));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
+            File fileA = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.FILE);
+            try {
+                FileUtils.copyFile(fileA, new File(pathName));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            getPageInstance().screenshot(new com.microsoft.playwright.Page.ScreenshotOptions()
+                    .setPath(Paths.get(pathName)));
         }
         return new File(pathName);
     }

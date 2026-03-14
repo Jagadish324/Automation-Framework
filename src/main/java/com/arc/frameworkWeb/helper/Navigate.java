@@ -13,9 +13,9 @@ public class Navigate extends CommonHelper {
     public static void navigateTo(String url) {
         beforePerformingAction();
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            webDriver.navigate().to(url);
+            getDriver().navigate().to(url);
         } else {
-            page.navigate(url);
+            getPageInstance().navigate(url);
         }
         afterPerformingAction();
     }
@@ -26,9 +26,9 @@ public class Navigate extends CommonHelper {
     public static void get(String url) {
         beforePerformingAction();
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            webDriver.get(url);
+            getDriver().get(url);
         } else {
-            page.navigate(url);
+            getPageInstance().navigate(url);
         }
         afterPerformingAction();
     }
@@ -38,9 +38,9 @@ public class Navigate extends CommonHelper {
     public static void navigateBack() {
         beforePerformingAction();
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            webDriver.navigate().back();
+            getDriver().navigate().back();
         } else {
-            page.goBack();
+            getPageInstance().goBack();
         }
         afterPerformingAction();
     }
@@ -50,9 +50,9 @@ public class Navigate extends CommonHelper {
     public static void navigateForward() {
         beforePerformingAction();
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            webDriver.navigate().forward();
+            getDriver().navigate().forward();
         } else {
-            page.goForward();
+            getPageInstance().goForward();
         }
         afterPerformingAction();
     }
@@ -62,9 +62,9 @@ public class Navigate extends CommonHelper {
     public static void refreshPage() {
         beforePerformingAction();
         if (CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            webDriver.navigate().refresh();
+            getDriver().navigate().refresh();
         } else {
-            page.reload();
+            getPageInstance().reload();
         }
         afterPerformingAction();
     }
@@ -74,9 +74,9 @@ public class Navigate extends CommonHelper {
     public static void quit() {
         beforePerformingAction();
         if(CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            webDriver.quit();
+            getDriver().quit();
         }else {
-            page.close();
+            getPageInstance().close();
         }
         afterPerformingAction();
     }
@@ -86,9 +86,9 @@ public class Navigate extends CommonHelper {
      */
     public static String getTitle() {
         if(CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            return  webDriver.getTitle();
+            return getDriver().getTitle();
         }else{
-            return page.title();
+            return getPageInstance().title();
         }
     }
     /**
@@ -97,9 +97,9 @@ public class Navigate extends CommonHelper {
      */
     public static String getCurrentUrl() {
         if(CONSTANT.TOOL.equalsIgnoreCase("selenium")) {
-            return webDriver.getCurrentUrl();
+            return getDriver().getCurrentUrl();
         }else {
-            return page.url();
+            return getPageInstance().url();
         }
     }
 }
