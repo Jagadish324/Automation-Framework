@@ -1,6 +1,7 @@
 package com.arc.frameworkWeb.helper;
 
 import com.arc.frameworkWeb.utility.CONSTANT;
+import com.microsoft.playwright.BoundingBox;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.MouseButton;
 import org.apache.logging.log4j.LogManager;
@@ -91,7 +92,7 @@ public class Mouse extends CommonHelper {
             action.clickAndHold(getElement(locator)).perform();
         } else {
             Locator playwrightLocator = getPageInstance().locator(getLocator("" + locator)).first();
-            Locator.BoundingBoxResult box = playwrightLocator.boundingBox();
+            BoundingBox box = playwrightLocator.boundingBox();
             if (box != null) {
                 double x = box.x + box.width / 2;
                 double y = box.y + box.height / 2;
@@ -198,7 +199,7 @@ public class Mouse extends CommonHelper {
             draw.perform();
         } else {
             Locator canvasLoc = getPageInstance().locator(getLocator("" + canvasLocator)).first();
-            Locator.BoundingBoxResult box = canvasLoc.boundingBox();
+            BoundingBox box = canvasLoc.boundingBox();
             if (box != null) {
                 double startX = box.x + box.width / 2;
                 double startY = box.y + box.height / 2;
