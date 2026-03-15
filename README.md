@@ -242,7 +242,8 @@ The web module provides 140+ methods for browser automation using Selenium or Pl
 - **ScreenShot**: Capture and compare screenshots
 - **ExplicitWait**: Custom wait conditions
 - **AutoWait**: Automatic wait mechanism before actions
-- **Validation**: Element state validation
+- **ElementInfo**: Element state checks (`isDisplayed`, `isEnabled`, `getText`)
+- **Validation**: Text equality assertions (`validateText`, `validateTextNotEqual`)
 - **ChromeDevTools**: Network and console log capture
 - **VerifyBrokenLinks**: Link validation across pages
 - **Accessibility**: Accessibility testing helpers
@@ -258,13 +259,13 @@ import org.openqa.selenium.By;
 Button.click(By.id("submitButton"));
 
 // Type in text box
-TextBox.sendKeys(By.name("username"), "testuser");
+TextBox.sendText(By.name("username"), "testuser");
 
 // Select from dropdown
 DropDown.selectByVisibleText(By.id("country"), "United States");
 
-// Validate element is displayed
-boolean isDisplayed = Validation.isDisplayed(By.xpath("//h1[@class='title']"));
+// Check if element is displayed
+boolean isDisplayed = ElementInfo.isDisplayed(By.xpath("//h1[@class='title']"));
 ```
 
 ### 2. frameworkDevice (Mobile Automation)
@@ -405,8 +406,8 @@ public class LoginTest {
         Log.info("Navigated to login page");
 
         // Enter credentials
-        TextBox.sendKeys(By.id("username"), "testuser");
-        TextBox.sendKeys(By.id("password"), "password123");
+        TextBox.sendText(By.id("username"), "testuser");
+        TextBox.sendText(By.id("password"), "password123");
         Log.info("Entered credentials");
 
         // Click login button
@@ -414,7 +415,7 @@ public class LoginTest {
         Log.info("Clicked login button");
 
         // Validate successful login
-        boolean isLoggedIn = Validation.isDisplayed(By.className("dashboard"));
+        boolean isLoggedIn = ElementInfo.isDisplayed(By.className("dashboard"));
         assertTrue(isLoggedIn, "User should be logged in");
         Log.info("Login validation passed");
 
@@ -463,12 +464,12 @@ public class LoginSteps {
 
     @When("I enter username {string}")
     public void enterUsername(String username) {
-        TextBox.sendKeys(By.id("username"), username);
+        TextBox.sendText(By.id("username"), username);
     }
 
     @When("I enter password {string}")
     public void enterPassword(String password) {
-        TextBox.sendKeys(By.id("password"), password);
+        TextBox.sendText(By.id("password"), password);
     }
 
     @When("I click the login button")
@@ -478,7 +479,7 @@ public class LoginSteps {
 
     @Then("I should see the dashboard")
     public void validateDashboard() {
-        assert Validation.isDisplayed(By.className("dashboard"));
+        assert ElementInfo.isDisplayed(By.className("dashboard"));
     }
 }
 ```
@@ -503,8 +504,8 @@ public class DataDrivenTest {
             String password = (String) row[1];
 
             // Execute test with data
-            TextBox.sendKeys(By.id("username"), username);
-            TextBox.sendKeys(By.id("password"), password);
+            TextBox.sendText(By.id("username"), username);
+            TextBox.sendText(By.id("password"), password);
             Button.click(By.id("loginButton"));
 
             // Validate and reset
@@ -729,9 +730,8 @@ Log.fatal("Critical failure");
     - Others throw exceptions
     - **Recommendation**: Standardize on logging and re-throwing wrapped exceptions
 
-4. **Code Cleanliness**: Commented-out code throughout the codebase
-    - Old implementations left in comments
-    - **Recommendation**: Remove commented code (use version control for history)
+4. **Code Cleanliness**: Some commented-out code may remain in the codebase
+    - **Recommendation**: Remove unused commented code (use version control for history)
 
 5. **Magic Numbers**: Some hardcoded values without constants
     - Wait times, retry counts
@@ -775,8 +775,8 @@ public class LoginPage {
     private By loginButton = By.id("loginButton");
 
     public void login(String username, String password) {
-        TextBox.sendKeys(usernameField, username);
-        TextBox.sendKeys(passwordField, password);
+        TextBox.sendText(usernameField, username);
+        TextBox.sendText(passwordField, password);
         Button.click(loginButton);
     }
 }
@@ -1005,80 +1005,16 @@ See **[MIGRATION_GUIDE_THREAD_SAFETY.md](MIGRATION_GUIDE_THREAD_SAFETY.md)** for
 
 ---
 
-## Recent Improvements
-
-### Thread Safety & Parallel Execution (v0.0.2)
-
-**Major enhancement for parallel test execution!**
-
-The framework now supports **thread-safe parallel test execution** using ThreadLocal pattern:
-
-#### New Features
-
-1. **DriverManager Class** - ThreadLocal-based driver management
-   - Each test thread gets its own WebDriver/Page instance
-   - Automatic cleanup per thread
-   - No interference between parallel tests
-
-2. **TestContext Class** - Thread-safe configuration management
-   - Thread-local storage for test configuration
-   - Custom data storage per thread
-   - Replaces static CONSTANT fields
-
-3. **Updated Helper Classes** - Backward compatible improvements
-   - All helpers now support ThreadLocal pattern
-   - Automatic fallback to static fields (backward compatible)
-   - No breaking changes to existing code
-
-#### Benefits
-
-- ✅ **3x faster test execution** with parallel runs
-- ✅ **Complete test isolation** - no shared state between threads
-- ✅ **100% backward compatible** - existing tests work unchanged
-- ✅ **Better resource management** - automatic per-thread cleanup
-- ✅ **Ready for CI/CD** - parallel execution in build pipelines
-
-#### Quick Start
-
-```java
-// Old way (still works, but not parallel-safe)
-WebDriver driver = new ChromeDriver();
-CommonHelper.webDriver = driver;
-
-// New way (thread-safe, supports parallel execution)
-WebDriver driver = new ChromeDriver();
-DriverManager.setWebDriver(driver);  // Thread-local storage
-// ... run tests ...
-DriverManager.cleanup();  // Auto cleanup
-```
-
-#### Documentation
-
-- **[Migration Guide](MIGRATION_GUIDE_THREAD_SAFETY.md)** - Complete guide for upgrading
-- **[Example Tests](src/test/java/examples/)** - Working examples of parallel tests
-
-#### Performance
-
-```
-Before: Sequential execution
-Test 1 → Test 2 → Test 3 → Test 4
-Total: 40 seconds
-
-After: Parallel execution (4 threads)
-Test 1 ║
-Test 2 ║ Run concurrently
-Test 3 ║
-Test 4 ║
-Total: ~10 seconds (4x faster!)
-```
-
-See **[MIGRATION_GUIDE_THREAD_SAFETY.md](MIGRATION_GUIDE_THREAD_SAFETY.md)** for complete migration instructions.
-
----
-
 ## Version History
 
-### 0.0.2-SNAPSHOT (Current)
+### 0.0.3-SNAPSHOT (Current)
+- **Test Fixes**: Corrected `TextBox.sendKeys()` → `TextBox.sendText()` in parallel test classes
+- **Test Fixes**: Corrected `Validation.isDisplayed()` → `ElementInfo.isDisplayed()` in parallel test classes
+- **Step Definitions**: Uncommented and updated `Hooks.java` to use `BaseClass.quitBrowser()`
+- **Step Definitions**: Uncommented and updated `CommonSteps.java` to use `BaseClass.launchSeleniumBrowser()`
+- **Docs**: Updated all README code examples to use correct API method names
+
+### 0.0.2-SNAPSHOT
 - **Thread Safety**: Added ThreadLocal pattern for parallel test execution
 - **New Classes**: DriverManager and TestContext for thread-safe management
 - **Performance**: Enable 3-4x faster test execution with parallel runs
