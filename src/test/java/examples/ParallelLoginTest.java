@@ -2,9 +2,9 @@ package examples;
 
 import com.arc.frameworkWeb.context.TestContext;
 import com.arc.frameworkWeb.helper.Button;
+import com.arc.frameworkWeb.helper.ElementInfo;
 import com.arc.frameworkWeb.helper.Navigate;
 import com.arc.frameworkWeb.helper.TextBox;
-import com.arc.frameworkWeb.helper.Validation;
 import com.arc.helper.Log;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
@@ -43,14 +43,14 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
         Navigate.get(LOGIN_URL);
 
         // Enter credentials
-        TextBox.sendKeys(By.id("username"), "validuser1");
-        TextBox.sendKeys(By.id("password"), "password123");
+        TextBox.sendText(By.id("username"), "validuser1");
+        TextBox.sendText(By.id("password"), "password123");
 
         // Click login button
         Button.click(By.id("loginButton"));
 
         // Validate successful login
-        boolean isDashboardDisplayed = Validation.isDisplayed(By.className("dashboard"));
+        boolean isDashboardDisplayed = ElementInfo.isDisplayed(By.className("dashboard"));
         assertTrue(isDashboardDisplayed, "Dashboard should be displayed after valid login");
 
         Log.info("Completed test: testValidLogin_User1");
@@ -65,12 +65,12 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
 
         Navigate.get(LOGIN_URL);
 
-        TextBox.sendKeys(By.id("username"), "validuser2");
-        TextBox.sendKeys(By.id("password"), "password456");
+        TextBox.sendText(By.id("username"), "validuser2");
+        TextBox.sendText(By.id("password"), "password456");
 
         Button.click(By.id("loginButton"));
 
-        boolean isDashboardDisplayed = Validation.isDisplayed(By.className("dashboard"));
+        boolean isDashboardDisplayed = ElementInfo.isDisplayed(By.className("dashboard"));
         assertTrue(isDashboardDisplayed, "Dashboard should be displayed after valid login");
 
         Log.info("Completed test: testValidLogin_User2");
@@ -84,13 +84,13 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
 
         Navigate.get(LOGIN_URL);
 
-        TextBox.sendKeys(By.id("username"), "validuser");
-        TextBox.sendKeys(By.id("password"), "wrongpassword");
+        TextBox.sendText(By.id("username"), "validuser");
+        TextBox.sendText(By.id("password"), "wrongpassword");
 
         Button.click(By.id("loginButton"));
 
         // Validate error message is displayed
-        boolean isErrorDisplayed = Validation.isDisplayed(By.className("error-message"));
+        boolean isErrorDisplayed = ElementInfo.isDisplayed(By.className("error-message"));
         assertTrue(isErrorDisplayed, "Error message should be displayed for invalid credentials");
 
         Log.info("Completed test: testInvalidLogin_WrongPassword");
@@ -108,7 +108,7 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
         Button.click(By.id("loginButton"));
 
         // Validate validation message
-        boolean isValidationDisplayed = Validation.isDisplayed(By.className("validation-error"));
+        boolean isValidationDisplayed = ElementInfo.isDisplayed(By.className("validation-error"));
         assertTrue(isValidationDisplayed, "Validation error should be displayed for empty fields");
 
         Log.info("Completed test: testInvalidLogin_EmptyFields");
@@ -126,7 +126,7 @@ public class ParallelLoginTest extends BaseTestThreadSafe {
         Button.click(By.linkText("Forgot Password?"));
 
         // Validate we're on forgot password page
-        boolean isForgotPasswordPage = Validation.isDisplayed(By.id("reset-password-form"));
+        boolean isForgotPasswordPage = ElementInfo.isDisplayed(By.id("reset-password-form"));
         assertTrue(isForgotPasswordPage, "Should navigate to forgot password page");
 
         Log.info("Completed test: testForgotPassword");

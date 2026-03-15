@@ -2,9 +2,9 @@ package examples;
 
 import com.arc.frameworkWeb.context.TestContext;
 import com.arc.frameworkWeb.helper.Button;
+import com.arc.frameworkWeb.helper.ElementInfo;
 import com.arc.frameworkWeb.helper.Navigate;
 import com.arc.frameworkWeb.helper.TextBox;
-import com.arc.frameworkWeb.helper.Validation;
 import com.arc.helper.Log;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -50,10 +50,10 @@ public class DataDrivenParallelTest extends BaseTestThreadSafe {
 
         // Enter credentials (handle empty values)
         if (!username.equals("emptyuser")) {
-            TextBox.sendKeys(By.id("username"), username);
+            TextBox.sendText(By.id("username"), username);
         }
         if (!password.equals("emptypass")) {
-            TextBox.sendKeys(By.id("password"), password);
+            TextBox.sendText(By.id("password"), password);
         }
 
         // Click login
@@ -61,10 +61,10 @@ public class DataDrivenParallelTest extends BaseTestThreadSafe {
 
         // Validate result based on expected outcome
         if (expectedResult.equals("success")) {
-            boolean isDashboardDisplayed = Validation.isDisplayed(By.className("dashboard"));
+            boolean isDashboardDisplayed = ElementInfo.isDisplayed(By.className("dashboard"));
             assertEquals(true, isDashboardDisplayed, "Expected successful login for " + username);
         } else {
-            boolean isErrorDisplayed = Validation.isDisplayed(By.className("error-message"));
+            boolean isErrorDisplayed = ElementInfo.isDisplayed(By.className("error-message"));
             assertEquals(true, isErrorDisplayed, "Expected error message for " + username);
         }
 
@@ -88,11 +88,11 @@ public class DataDrivenParallelTest extends BaseTestThreadSafe {
         Navigate.get("https://example.com");
 
         // Perform search
-        TextBox.sendKeys(By.id("searchBox"), searchQuery);
+        TextBox.sendText(By.id("searchBox"), searchQuery);
         Button.click(By.id("searchButton"));
 
         // Validate results
-        boolean resultsDisplayed = Validation.isDisplayed(By.className("search-results"));
+        boolean resultsDisplayed = ElementInfo.isDisplayed(By.className("search-results"));
         assertEquals(true, resultsDisplayed, "Search results should be displayed for: " + searchQuery);
 
         Log.info("Completed search test for: {}", searchQuery);
