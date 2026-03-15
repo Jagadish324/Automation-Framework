@@ -85,6 +85,10 @@ Automation-Framework/
 ├── src/
 │   ├── main/java/com/arc/
 │   │   ├── frameworkWeb/          # Web automation (140+ methods)
+│   │   │   ├── context/           # Thread-safe driver/context managers
+│   │   │   │   ├── DriverManager.java    # ThreadLocal WebDriver & Page
+│   │   │   │   ├── PlaywrightManager.java# Playwright lifecycle manager
+│   │   │   │   └── TestContext.java      # Thread-local test configuration
 │   │   │   ├── helper/            # Button, TextBox, DropDown, etc.
 │   │   │   ├── autowait/          # Auto-wait plugin system
 │   │   │   ├── driverListener/    # Event listener pattern
@@ -268,6 +272,31 @@ DropDown.selectByVisibleText(By.id("country"), "United States");
 boolean isDisplayed = ElementInfo.isDisplayed(By.xpath("//h1[@class='title']"));
 ```
 
+**Playwright Usage Example:**
+
+```java
+import com.arc.frameworkWeb.context.PlaywrightManager;
+import com.arc.frameworkWeb.helper.*;
+import com.arc.frameworkWeb.utility.CONSTANT;
+import org.openqa.selenium.By;
+
+// Switch to Playwright mode
+CONSTANT.TOOL = "playwright";
+
+// Launch Playwright browser (chromium, firefox, or webkit)
+PlaywrightManager.launchBrowser("chromium", false); // false = headed
+PlaywrightManager.createPage();
+
+// Same helper API works for both Selenium and Playwright
+Navigate.navigateTo("https://example.com");
+TextBox.sendText(By.id("username"), "testuser");
+Button.click(By.id("loginButton"));
+boolean isDisplayed = ElementInfo.isDisplayed(By.className("dashboard"));
+
+// Cleanup
+PlaywrightManager.closeAll();
+```
+
 ### 2. frameworkDevice (Mobile Automation)
 
 The device module provides 100+ methods for Android and iOS mobile automation.
@@ -429,6 +458,55 @@ public class LoginTest {
         DriverManager.cleanup();
         TestContext.clear();
         Log.info("Test teardown completed");
+    }
+}
+```
+
+### Complete Playwright Test Example
+
+```java
+import com.arc.frameworkWeb.context.DriverManager;
+import com.arc.frameworkWeb.context.PlaywrightManager;
+import com.arc.frameworkWeb.helper.*;
+import com.arc.frameworkWeb.utility.CONSTANT;
+import com.arc.helper.Log;
+import org.junit.jupiter.api.*;
+import org.openqa.selenium.By;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class PlaywrightLoginTest {
+
+    @BeforeEach
+    public void setup() {
+        CONSTANT.TOOL = "playwright";
+        CONSTANT.BROWSER_TYPE = "chromium";
+
+        PlaywrightManager.launchBrowser("chromium", false); // headed
+        PlaywrightManager.createPage();
+
+        Log.info("Playwright setup completed for thread: {}", Thread.currentThread().getName());
+    }
+
+    @Test
+    public void testSuccessfulLogin() {
+        Navigate.navigateTo("https://example.com/login");
+
+        TextBox.sendText(By.id("username"), "testuser");
+        TextBox.sendText(By.id("password"), "password123");
+        Button.click(By.id("loginButton"));
+
+        boolean isLoggedIn = ElementInfo.isDisplayed(By.className("dashboard"));
+        assertTrue(isLoggedIn, "User should be logged in");
+
+        // Screenshot via Playwright
+        ScreenShot.takeScreenshot("login_success");
+    }
+
+    @AfterEach
+    public void teardown() {
+        PlaywrightManager.closeAll();
+        Log.info("Playwright teardown completed");
     }
 }
 ```
@@ -784,21 +862,32 @@ public class LoginPage {
 
 ### 2. Implement Base Test Class
 
-```java
-public class BaseTest {
-    protected WebDriver driver;
+Use `BaseClass` (or `BaseTestThreadSafe` for parallel execution) which handles both Selenium and Playwright:
 
+```java
+// Selenium (thread-safe)
+public class MySeleniumTest extends BaseTestThreadSafe {
+    @Test
+    public void test() {
+        Navigate.get("https://example.com");
+    }
+}
+
+// Playwright
+public class MyPlaywrightTest {
     @BeforeEach
     public void setup() {
-        driver = new ChromeDriver();
-        new CommonHelper(driver);
+        BaseClass.launchPlaywrightBrowser("chromium", false);
+    }
+
+    @Test
+    public void test() {
+        Navigate.navigateTo("https://example.com");
     }
 
     @AfterEach
     public void teardown() {
-        if (driver != null) {
-            driver.quit();
-        }
+        BaseClass.quitBrowser();
     }
 }
 ```
@@ -936,6 +1025,31 @@ Enable debug logging in `log4j2.xml`:
 
 ## Recent Improvements
 
+### Full Playwright Helper Support (v0.0.3)
+
+All web framework helpers now route automatically to Playwright or Selenium based on `CONSTANT.TOOL`:
+
+- **PlaywrightManager**: ThreadLocal lifecycle manager for Playwright, Browser, BrowserContext, and Page — supports `chromium`, `firefox`, and `webkit` in headless or headed mode
+- **Helper parity**: `Mouse`, `Window`, `Frames`, `DropDown`, `CheckBox`, `KeyBoard`, `ExplicitWait`, `ScreenShot`, `Cookies`, `AutoWait` all have full Playwright implementations
+- **PlaywrightBaseTest**: Example test class showing parallel Playwright tests with JUnit 5
+- **Thread-safe by default**: each test thread gets its own Playwright Page via ThreadLocal
+
+**Quick Start (Playwright):**
+
+```java
+CONSTANT.TOOL = "playwright";
+BaseClass.launchPlaywrightBrowser("chromium", false); // or "firefox", "webkit"
+
+Navigate.navigateTo("https://example.com");
+TextBox.sendText(By.id("q"), "search term");
+Button.click(By.id("search"));
+boolean found = ElementInfo.isDisplayed(By.className("results"));
+
+BaseClass.quitBrowser();
+```
+
+---
+
 ### Thread Safety & Parallel Execution (v0.0.2)
 
 **Major enhancement for parallel test execution!**
@@ -1008,11 +1122,14 @@ See **[MIGRATION_GUIDE_THREAD_SAFETY.md](MIGRATION_GUIDE_THREAD_SAFETY.md)** for
 ## Version History
 
 ### 0.0.3-SNAPSHOT (Current)
+- **Playwright Support**: `PlaywrightManager` — ThreadLocal lifecycle manager for Browser, BrowserContext, and Page
+- **Playwright Support**: Full Playwright implementations added to `Mouse`, `Window`, `Frames`, `DropDown`, `CheckBox`, `KeyBoard`, `ExplicitWait`, `ScreenShot`, `Cookies`, `AutoWait`
+- **Playwright Support**: `PlaywrightBaseTest` — example parallel Playwright tests with JUnit 5
 - **Test Fixes**: Corrected `TextBox.sendKeys()` → `TextBox.sendText()` in parallel test classes
 - **Test Fixes**: Corrected `Validation.isDisplayed()` → `ElementInfo.isDisplayed()` in parallel test classes
 - **Step Definitions**: Uncommented and updated `Hooks.java` to use `BaseClass.quitBrowser()`
 - **Step Definitions**: Uncommented and updated `CommonSteps.java` to use `BaseClass.launchSeleniumBrowser()`
-- **Docs**: Updated all README code examples to use correct API method names
+- **Docs**: Updated README with Playwright examples, context package, and correct API method names
 
 ### 0.0.2-SNAPSHOT
 - **Thread Safety**: Added ThreadLocal pattern for parallel test execution
