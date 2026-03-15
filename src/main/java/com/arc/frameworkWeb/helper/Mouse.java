@@ -1,7 +1,7 @@
 package com.arc.frameworkWeb.helper;
 
 import com.arc.frameworkWeb.utility.CONSTANT;
-import com.microsoft.playwright.BoundingBox;
+import com.microsoft.playwright.options.BoundingBox;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.MouseButton;
 import org.apache.logging.log4j.LogManager;
